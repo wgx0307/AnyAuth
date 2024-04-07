@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+  <meta name="renderer" content="webkit"/>
+  <title>获取微博Cookie</title>
+  <link href="//cdn.staticfile.org/twitter-bootstrap/3.4.1/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="//cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+  <script src="//cdn.staticfile.org/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdn.staticfile.org/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="//cdn.staticfile.org/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<div class="container">
+<div class="col-xs-12 col-sm-10 col-md-8 col-lg-6 center-block" style="float: none;">
+<div class="panel panel-primary">
+	<div class="panel-heading" style="text-align: center;"><h3 class="panel-title">
+		获取微博Cookie
+	</div>
+	<div class="panel-body" style="text-align: center;">
+		<div class="list-group">
+			<ul class="nav nav-tabs">
+				<li><a href="/weibo/index.html">普通登录</a></li><li><a href="/weibo/index2.html">扫码登录</a></li><li><a href="/weibo/index3.html">短信验证码登录</a></li><li><a href="/weibo/index4.html">QQ快捷登录</a></li><li class="active"><a href="/weibo/index5.html">转换</a></li>
+			</ul>
+			<div class="list-group-item"><img src="https://img.t.sinajs.cn/t6/style/images/global_nav/WB_logo-x2.png"></div>
+			<div class="list-group-item list-group-item-info" style="display:none;font-weight: bold;" id="load">
+			</div>
+			<div id="login" class="list-group-item">
+				<div class="form-group">
+					<label>使用登录COOKIE获取微博COOKIE</label><br/>
+					<textarea class="form-control" rows="5" id="inputcookie" placeholder="输入登录COOKIE"></textarea>
+				</div>
+				<button type="button" id="submit" class="btn btn-primary btn-block">获取</button>
+			</div>
+			<div id="resultForm" class="list-group-item" style="display:none;text-align: left;">
+				<div class="form-group">
+					<label>登录COOKIE（有效期约1个月）：</label><br/>
+					<textarea class="form-control" rows="5" id="cookie"></textarea>
+				</div>
+				<div class="form-group">
+					<label>微博COOKIE（有效期约2天）：</label><br/>
+					<textarea class="form-control" rows="5" id="wbcookie"></textarea>
+				</div>
+			</div>
+			<br/><a href="./index5.html">点此重新登录</a>
+		</div>
+	</div>
+</div>
+</div>
+</div>
+<script src="/weibo/encoder.js"></script>
+<script>
+function cookielogin(cookie){
+	$('#load').html('正在登录，请稍等...');
+	var loginurl="/weibo/login.php?do=cookielogin&r="+Math.random(1);
+	$.ajax({
+		type : "POST",
+		url : loginurl,
+		data : {cookie:cookie},
+		dataType : 'json',
+		success : function(data) {
+			if(data.code == 0){
+				$('#login').hide();
+				showresult(data);
+			}else{
+				$('#load').html(data.msg);
+				$('#login').show();
+			}
+		}
+	});
+}
+function showresult(arr){
+	var cookie = '';
+	$.each(arr.cookie, function(key, value){
+		cookie += key+'='+value+'; '
+	});
+	var wbcookie = '';
+	$.each(arr.wbcookie, function(key, value){
+		wbcookie += key+'='+value+'; '
+	});
+	$('#cookie').val(cookie);
+	$('#wbcookie').val(wbcookie);
+	$('#resultForm').show();
+	$('#load').html('登录成功！'+decodeURIComponent(arr.nick)+'（UID：'+arr.uid+'）');
+}
+$(document).ready(function(){
+	$('#submit').click(function(){
+		var self=$(this);
+		var cookie=$('#inputcookie').val();
+		if(cookie=='') {
+			alert("登录COOKIE不能为空！");
+			return false;
+		}
+		$('#load').show();
+		if (self.attr("data-lock") === "true") return;
+		else self.attr("data-lock", "true");
+		cookielogin(cookie);
+		self.attr("data-lock", "false");
+	});
+});
+</script>
+</body>
+</html>
